@@ -1,24 +1,22 @@
 #include "lib/httplib.h"
+#include "lib/json.hpp"
 #include <iostream>
 #include <vector>
 #include <string>
-#include <algorithm> 
-#include <sstream> 
-#include <iterator> 
 
 // g++ -o main src/main.cpp -pthread
 using namespace std;
-int main(void)
-{
+using json = nlohmann::json;
+int main(void){
   using namespace httplib;
 
   Server svr;
 
   svr.Get("/hi", [](const Request& req, Response& res) {
-    vector <string> sv;
-    sv.push_back("hello world");
-    sv.push_back("hello shin");
-    res.set_content(sv);
+   json array = {};
+   array.push_back("first");
+   array.push_back("second");
+   res.set_content(array.dump(),"text/plain");
   });
 
   svr.Get(R"(/numbers/(\d+))", [&](const Request& req, Response& res) {
