@@ -7,7 +7,6 @@
 #include <fstream>
 #include <iostream>
 
-// g++ -o main src/main.cpp -pthread
 using namespace std;
 using json = nlohmann::json;
 using namespace httplib;
@@ -44,14 +43,12 @@ int main(){
     if (current == NULL or current == &T.root) {
         res.set_content("No words with matching prefix found", "text/plain");
     } else {
-        // Prefix has been found in the tree, look for children
         bool haschildren = false;
         for (int c=0; c<26; c++) {
             if (current->children[c] != NULL) {
                  haschildren = true; break;
             }
         }
-        // No words found with the prefix (only the prefix was found)
         if (haschildren == false) {
             cout << "No words with matching prefix found" << endl;
         } else {
@@ -61,8 +58,6 @@ int main(){
             res.set_content(temp.dump() , "text/plain");
         }
     }
-
-    
   });
 
   svr.Get("/stop", [&](const Request& req, Response& res) {
