@@ -4,40 +4,37 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <fstream>
+#include <iostream>
 
 // g++ -o main src/main.cpp -pthread
 using namespace std;
 using json = nlohmann::json;
 using namespace httplib;
-int main(){
 
+Trie T;
+
+void insert(){
+  std::ifstream in("src/data/words.txt");
+
+  if (!in.is_open()) {
+    std::cout << "src/data/words.txt not found\n";
+    exit(0);
+  }
+
+  std::string s;
+  while (in) {
+    getline(in, s);
+    T.Insert(s);
+  }
+}
+
+int main(){
+  insert();
+  cout << "Server running at http://localhost:1234\n";
   Server svr;
 
-  svr.Get("/hi", [](const Request& req, Response& res) {
-   json array = {};
-   array.push_back("first");
-   array.push_back("second");
-   res.set_content(array.dump(),"text/plain");
-  });
-
   svr.Get("/auto", [](const Request& req, Response& res) {
-
-    Trie T;
-
-    // Insert word(s) in the trie
-    T.Insert("we");
-    T.Insert("walk");
-    T.Insert("want");
-    T.Insert("wish");
-    T.Insert("wit");
-    T.Insert("am");
-    T.Insert("yo");
-    T.Insert("will");
-    T.Insert("wee");
-    T.Insert("war");
-    T.Insert("warp");
-    T.Insert("win");
-
     if (!req.has_param("key")) {
       res.set_content("input prefix", "text/plain");
     }
@@ -45,7 +42,7 @@ int main(){
     TrieNode * current = T.Search(prefix);
 
     if (current == NULL or current == &T.root) {
-        cout << "No words with matching prefix found" << endl;
+        res.set_content("No words with matching prefix found", "text/plain");
     } else {
         // Prefix has been found in the tree, look for children
         bool haschildren = false;
