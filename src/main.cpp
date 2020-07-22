@@ -8,11 +8,8 @@
 // g++ -o main src/main.cpp -pthread
 using namespace std;
 using json = nlohmann::json;
-
+using namespace httplib;
 int main(){
-    Trie T;
-  using namespace httplib;
-
 
   Server svr;
 
@@ -23,11 +20,28 @@ int main(){
    res.set_content(array.dump(),"text/plain");
   });
 
-  svr.Get(R"(/numbers/(\s+))", [&](const Request& req, Response& res) {
-    string str = req.matches[1];
+  svr.Get("/auto", [](const Request& req, Response& res) {
 
-    string prefix("wa");
+    Trie T;
 
+    // Insert word(s) in the trie
+    T.Insert("we");
+    T.Insert("walk");
+    T.Insert("want");
+    T.Insert("wish");
+    T.Insert("wit");
+    T.Insert("am");
+    T.Insert("yo");
+    T.Insert("will");
+    T.Insert("wee");
+    T.Insert("war");
+    T.Insert("warp");
+    T.Insert("win");
+
+    if (!req.has_param("key")) {
+      res.set_content("input prefix", "text/plain");
+    }
+    string prefix = req.get_param_value("key");
     TrieNode * current = T.Search(prefix);
 
     if (current == NULL or current == &T.root) {
@@ -47,20 +61,11 @@ int main(){
             cout << "Word(s) with prefix: " << prefix << endl;
             json temp = T.PrintLexical(current, prefix, "");
             cout << temp.dump() ;
+            res.set_content(temp.dump() , "text/plain");
         }
     }
 
-    res.set_content(str, "text/plain");
-  });
-
-  svr.Get("/body-header-param", [](const Request& req, Response& res) {
-    if (req.has_header("Content-Length")) {
-      auto val = req.get_header_value("Content-Length");
-    }
-    if (req.has_param("key")) {
-      auto val = req.get_param_value("key");
-    }
-    res.set_content(req.body, "text/plain");
+    
   });
 
   svr.Get("/stop", [&](const Request& req, Response& res) {
